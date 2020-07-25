@@ -1,0 +1,8 @@
+.layout {
+  min-height: 100vh;
+}
+
+.layout .layout__mainrow {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
