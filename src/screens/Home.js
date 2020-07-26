@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import { Tabs, Collapse, Row, Col, Checkbox } from 'antd';
 import {
   FontSizeOutlined,
@@ -7,6 +7,7 @@ import {
   ItalicOutlined,
   UnderlineOutlined,
 } from '@ant-design/icons';
+import Axios from 'axios';
 
 //Custom Imports
 import {
@@ -16,8 +17,10 @@ import {
   TypoComponent,
   ImageUploader,
   SlideGroup,
+  FontStyle,
 } from '../components';
-import { widthOptions, fontFamilyOptions, slideGroup } from '../utils/data';
+import { API_END_POINT } from '../config';
+// import { fields } from '../testJson';
 import './home.css';
 
 export const Home = (props) => {
@@ -34,6 +37,7 @@ export const Home = (props) => {
     textSpacing: 0,
     imageSpacing: 0,
     agree: false,
+    fields: [],
   });
 
   const {
@@ -48,12 +52,11 @@ export const Home = (props) => {
     textSpacing,
     imageSpacing,
     agree,
+    fields,
   } = state;
 
   const { TabPane } = Tabs;
   const { Panel } = Collapse;
-
-  //Temp variable
 
   const textStyles = [
     { component: <BoldOutlined />, type: 'bold' },
@@ -109,6 +112,20 @@ export const Home = (props) => {
     setState({ ...state, uploadedLogo: fileList });
   };
 
+  useEffect(() => {
+    const fetchFormJson = async () => {
+      Axios.get(`${API_END_POINT}/formfields`)
+        .then((data) => {
+          setState({ ...state, fields: data.data.data });
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    };
+    fetchFormJson();
+    // eslint-disable-next-line
+  }, []);
+
   return (
     <Fragment>
       <Tabs defaultActiveKey="1">
@@ -121,47 +138,54 @@ export const Home = (props) => {
           }
           key="1"
         >
-          <div
-            style={{
-              width: 100,
-              height: 'auto',
-              margin: 15,
-              display: 'inline',
-            }}
-          >
-            Active Width:{activeWidth}
-          </div>
-          <div
-            style={{
-              width: 100,
-              height: 'auto',
-              borderRadius: '50%',
-              margin: 15,
-              display: 'inline',
-            }}
-          >
-            Active Color: {activeWidthColor}
-          </div>
-
+          {[
+            { id: 1, active: activeWidth },
+            { id: 2, active: activeWidthColor },
+          ].map((elem, index) => (
+            <div
+              style={{
+                width: 100,
+                height: 'auto',
+                margin: 15,
+                display: 'inline',
+              }}
+            >
+              Active Value:{elem.active}
+            </div>
+          ))}
           <Collapse
             accordion
             expandIconPosition="right"
             style={{ position: 'relative' }}
           >
-            <Panel header="Width" key="1">
-              <WidthSection
-                widthOptions={widthOptions}
-                activeWidth={activeWidth}
-                handleWidthChange={handleWidthChange}
-              />
-            </Panel>
-            <Panel header="Color" key="2">
-              <ColorSection
-                activeWidthColor={activeWidthColor}
-                type="width"
-                handleColorChange={handleColorChange}
-              />
-            </Panel>
+            {fields &&
+              fields.length > 0 &&
+              fields.map((field, index) => {
+                if (field.name === 'widthSelection') {
+                  return (
+                    <Panel header="Width" key="1">
+                      <WidthSection
+                        widthOptions={field.options}
+                        activeWidth={activeWidth}
+                        handleWidthChange={handleWidthChange}
+                      />
+                    </Panel>
+                  );
+                }
+                if (field.name === 'colorSelection' && field.type === 'width') {
+                  return (
+                    <Panel header="Color" key="2">
+                      <ColorSection
+                        activeWidthColor={activeWidthColor}
+                        type={field.type}
+                        handleColorChange={handleColorChange}
+                      />
+                    </Panel>
+                  );
+                } else {
+                  return <div></div>;
+                }
+              })}
           </Collapse>
         </TabPane>
         <TabPane
@@ -175,54 +199,104 @@ export const Home = (props) => {
         >
           <Collapse accordion expandIconPosition="right">
             <Panel header="Front Text And Image" key="1">
-              <Row gutter={[20, 20]}>
-                <Col span={24}>
-                  <InputText
-                    handleChange={handleChange}
-                    inputText={inputText}
-                    textStyle={textStyle}
-                    textStyles={textStyles}
-                    handleTextStyle={handleTextStyle}
-                  />
-                </Col>
-                <Col span={24}>
-                  <ColorSection
-                    title="Pick your Color"
-                    activeTextColor={activeTextColor}
-                    type="text"
-                    handleColorChange={handleColorChange}
-                  />
-                </Col>
-                <Col span={24}>
-                  <TypoComponent
-                    fontFamilyOptions={fontFamilyOptions}
-                    typography={typography}
-                    handleTypography={handleTypography}
-                    title="Typography"
-                  />
-                </Col>
-                <Col span={24}>
-                  <ImageUploader
-                    uploadedLogo={uploadedLogo}
-                    handleUpload={handleUpload}
-                  />
-                </Col>
-                <Col span={24}>
-                  <SlideGroup
-                    slideGroup={slideGroup}
-                    handleSlider={handleSlider}
-                    sliderValues={(textSize, textSpacing, imageSpacing)}
-                  />
-                </Col>
-                <Col span={24}>
-                  <Checkbox
-                    name="apply"
-                    checked={agree}
-                    onChange={() => setState({ ...state, agree: !agree })}
-                  >
-                    Apply the same Text and Image to the back side of lanyards
-                  </Checkbox>
-                </Col>
+              <Row gutter={[20, 20]} align="middle">
+                {fields &&
+                  fields.length > 0 &&
+                  fields.map((field, index) => {
+                    if (field.type === 'textInput') {
+                      return (
+                        <Col span={18}>
+                          <InputText
+                            placeholder={field.placeholder}
+                            required={field.required}
+                            handleChange={handleChange}
+                            inputText={inputText}
+                          />
+                        </Col>
+                      );
+                    }
+                    if (field.name === 'fontStyle') {
+                      return (
+                        <Col span={6}>
+                          <FontStyle
+                            textStyle={textStyle}
+                            textStyles={textStyles}
+                            handleTextStyle={handleTextStyle}
+                          />
+                        </Col>
+                      );
+                    }
+                    if (
+                      field.name === 'colorSelection' &&
+                      field.type === 'text'
+                    ) {
+                      return (
+                        <Col span={24}>
+                          <ColorSection
+                            title={field.title}
+                            activeTextColor={activeTextColor}
+                            type={field.type}
+                            handleColorChange={handleColorChange}
+                          />
+                        </Col>
+                      );
+                    }
+
+                    if (field.name === 'typographySelection') {
+                      return (
+                        <Col span={24}>
+                          <TypoComponent
+                            fontFamilyOptions={field.options}
+                            typography={typography}
+                            handleTypography={handleTypography}
+                            title={field.title}
+                          />
+                        </Col>
+                      );
+                    }
+
+                    if (field.name === 'imageUpload') {
+                      return (
+                        <Col span={24}>
+                          <ImageUploader
+                            uploadedLogo={uploadedLogo}
+                            handleUpload={handleUpload}
+                            btnText={field.btnText}
+                          />
+                        </Col>
+                      );
+                    }
+
+                    if (field.name === 'slideGroup') {
+                      return (
+                        <Col span={24}>
+                          <SlideGroup
+                            slideGroup={field.options}
+                            handleSlider={handleSlider}
+                            sliderValues={(textSize, textSpacing, imageSpacing)}
+                          />
+                        </Col>
+                      );
+                    }
+
+                    if (field.type === 'checkbox') {
+                      return (
+                        <Col span={24}>
+                          <Checkbox
+                            name="agree"
+                            checked={agree}
+                            onChange={() =>
+                              setState({ ...state, agree: !agree })
+                            }
+                          >
+                            {field.value}
+                          </Checkbox>
+                        </Col>
+                      );
+                    } else {
+                      return <div></div>;
+                    }
+                  })}
               </Row>
             </Panel>
           </Collapse>

@@ -11,7 +11,7 @@ function getBase64(file) {
   });
 }
 
-export const ImageUploader = ({ handleUpload, uploadedLogo }) => {
+export const ImageUploader = ({ handleUpload, uploadedLogo, btnText }) => {
   const [state, setState] = useState({
     previewVisible: false,
     previewImage: '',
@@ -39,7 +39,7 @@ export const ImageUploader = ({ handleUpload, uploadedLogo }) => {
   const uploadButton = (
     <div>
       <PlusOutlined />
-      <div className="ant-upload-text">Upload</div>
+      <div className="ant-upload-text">{btnText}</div>
     </div>
   );
   return (

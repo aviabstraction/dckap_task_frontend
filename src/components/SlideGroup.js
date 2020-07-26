@@ -8,7 +8,7 @@ export const SlideGroup = (props) => {
   const { slideGroup, ...rest } = props;
   return (
     <section className="slidegroup" style={{ marginBottom: 10 }}>
-      <Row justify="space-between">
+      <Row justify="space-between" gutter={[10, 10]}>
         {slideGroup.map((elem, index) => {
           return (
             <Slide

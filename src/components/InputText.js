@@ -1,42 +1,18 @@
 import React from 'react';
-import { Input, Row, Col } from 'antd';
+import { Input } from 'antd';
 
 export const InputText = (props) => {
-  const {
-    inputText,
-    handleChange,
-    textStyle,
-    textStyles,
-    handleTextStyle,
-  } = props;
+  const { inputText, handleChange, placeholder, required } = props;
 
   return (
     <section className="inputtext" style={{ margin: '10px 0px' }}>
-      <Row justify="space-between" align="middle">
-        <Col span={18}>
-          <Input
-            placeholder="Type Text here"
-            name="inputText"
-            value={inputText}
-            onChange={handleChange}
-          />
-        </Col>
-        {textStyles.map((elem, index) => {
-          return (
-            <Col
-              key={index}
-              style={{
-                borderBottom:
-                  elem.type === textStyle ? '3px solid red' : 'none',
-                cursor: 'pointer',
-              }}
-              onClick={() => handleTextStyle(elem.type)}
-            >
-              {elem.component}
-            </Col>
-          );
-        })}
-      </Row>
+      <Input
+        placeholder={placeholder}
+        name="inputText"
+        value={inputText}
+        required={required}
+        onChange={handleChange}
+      />
     </section>
   );
 };

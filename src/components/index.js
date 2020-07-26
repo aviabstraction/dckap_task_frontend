@@ -4,3 +4,4 @@ export * from './InputText';
 export * from './ImageUploader';
 export * from './SlideGroup';
 export * from './typography/TypoComponent';
+export * from './FontStyle';
